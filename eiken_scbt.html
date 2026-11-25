@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英検S-CBT体験版 2級 リーディングテスト</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: "Meiryo", "Hiragino Kaku Gothic ProN", "MS PGothic", Arial, sans-serif;
+    background-color: #d8dee6;
+    color: #222;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+  }
+
+  /* =========================================================
+     START / END OVERLAY SCREENS (Official Demo Style)
+  ========================================================= */
+  .modal-screen {
+    position: fixed;
+    inset: 0;
+    background: #eef2f6;
+    z-index: 500;
+    display: none;
+    flex-direction: column;
+  }
+  .modal-screen.active {
+    display: flex;
+  }
+  .demo-top-banner {
+    background: #1a3b6e;
+    color: #fff;
+    height: 46px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: bold;
+    font-size: 16px;
+    border-bottom: 3px solid #0e2447;
+  }
+  .start-center {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .start-box {
+    background: #fff;
+    border: 2px solid #8fa3be;
+    border-radius: 6px;
+    width: 640px;
+    max-width: 95vw;
+    padding: 32px 36px;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+  }
+  .grade-pill {
+    display: inline-block;
+    background: #1a3b6e;
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 4px 18px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+  }
+  .start-box h1 {
+    font-size: 22px;
+    color: #1a3b6e;
+    margin-bottom: 16px;
+  }
+  .start-notes {
+    text-align: left;
+    background: #f5f8fc;
+    border: 1px solid #cbd5e1;
+    padding: 14px 18px;
+    border-radius: 4px;
+    font-size: 13.5px;
+    line-height: 1.65;
+    margin-bottom: 22px;
+  }
+  .btn-eiken-start {
+    background: linear-gradient(to bottom, #2c6cb0, #1a497d);
+    color: #fff;
+    border: 1px solid #103259;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 12px 54px;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  .btn-eiken-start:hover {
+    background: linear-gradient(to bottom, #357bc4, #215794);
+  }
+
+  /* =========================================================
+     MAIN EXAM HEADER (Exact Eiken S-CBT Demo Layout)
+  ========================================================= */
+  .scbt-header {
+    background: linear-gradient(to bottom, #234b82, #173561);
+    color: #fff;
+    height: 44px;
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #0d2140;
+    flex-shrink: 0;
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .grade-badge {
+    background: #fff;
+    color: #173561;
+    font-weight: 900;
+    font-size: 14px;
+    padding: 2px 10px;
+    border-radius: 3px;
+  }
+  .test-title {
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 0.3px;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .font-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    background: rgba(0,0,0,0.25);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+  }
+  .font-ctrl button {
+    background: #e2e8f0;
+    border: 1px solid #94a3b8;
+    color: #1e293b;
+    padding: 1px 6px;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  .font-ctrl button.active {
+    background: #ff9800;
+    color: #fff;
+    border-color: #e65100;
+  }
+  .time-panel {
+    background: #0b1c36;
+    border: 1px solid #4a72a8;
+    padding: 3px 12px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .time-val {
+    font-family: "Consolas", monospace;
+    font-size: 17px;
+    font-weight: bold;
+    color: #ffe600;
+  }
+
+  /* =========================================================
+     MAIN BODY: LEFT WORKSPACE + RIGHT "あなたの解答" PANEL
+  ========================================================= */
+  .scbt-main {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    padding: 6px;
+    gap: 6px;
+  }
+
+  /* LEFT SIDE: QUESTION AREA */
+  .left-exam-area {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #9aa8ba;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Instruction Bar at Top of Question Area */
+  .instruction-strip {
+    background: #eef3fa;
+    border-bottom: 1px solid #c2cfe0;
+    padding: 6px 12px;
+    font-size: 12.5px;
+    font-weight: bold;
+    color: #16325c;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  /* PART 1 VIEW (Single Column, 1 Question at a time) */
+  .part1-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 16px 32px;
+    overflow-y: auto;
+  }
+  .q-block {
+    max-width: 860px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .q-top-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .q-paren-num {
+    font-weight: bold;
+    font-size: 16px;
+    color: #173561;
+    white-space: nowrap;
+    padding-top: 2px;
+  }
+  .q-text-body {
+    font-size: var(--q-font, 15.5px);
+    line-height: 1.6;
+    color: #111;
+    white-space: pre-line;
+  }
+
+  /* Choices list (Official Demo Style: Number box + Text + "あとで見直す") */
+  .choices-wrap {
+    margin-left: 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .choice-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 12px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    transition: background 0.1s, border-color 0.1s;
+    font-size: var(--q-font, 15px);
+  }
+  .choice-row:hover {
+    background: #f0f7ff;
+    border-color: #6b9ed4;
+  }
+  .choice-row.selected {
+    background: #dceeff;
+    border-color: #1a5fb4;
+    font-weight: bold;
+  }
+  .choice-num-box {
+    width: 24px;
+    height: 24px;
+    border: 1.5px solid #64748b;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: bold;
+    background: #f8fafc;
+    color: #1e293b;
+    flex-shrink: 0;
+  }
+  .choice-row.selected .choice-num-box {
+    background: #1a5fb4;
+    border-color: #1a5fb4;
+    color: #fff;
+  }
+
+  .review-check-row {
+    margin-left: 36px;
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+  }
+  .btn-review-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f8fafc;
+    border: 1px solid #94a3b8;
+    border-radius: 4px;
+    padding: 5px 12px;
+    font-size: 12.5px;
+    font-weight: bold;
+    color: #334155;
+    cursor: pointer;
+  }
+  .btn-review-toggle.checked {
+    background: #fff3cd;
+    border-color: #e69500;
+    color: #8a5300;
+  }
+  .check-sq {
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid #64748b;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    border-radius: 2px;
+  }
+  .btn-review-toggle.checked .check-sq {
+    background: #ff9800;
+    border-color: #e65100;
+    color: #fff;
+  }
+
+  /* PART 2 & 3 SPLIT VIEW (Left Passage with Canvas Drawing + Right Question) */
+  .split-container {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+  .passage-pane {
+    width: 55%;
+    height: 100%;
+    border-right: 3px solid #9aa8ba;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+  }
+
+  /* Official Demo Drawing Toolbar: 赤ペン / マーカー / 消しゴム / 全体表示 */
+  .drawing-toolbar {
+    background: #e6ecf5;
+    border-bottom: 1px solid #b8c4d4;
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .tool-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .draw-btn {
+    background: #fff;
+    border: 1px solid #8fa3be;
+    border-radius: 3px;
+    padding: 3px 9px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #1e293b;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .draw-btn:hover {
+    background: #f1f5f9;
+  }
+  .draw-btn.active {
+    background: #1a3b6e;
+    color: #fff;
+    border-color: #0e2447;
+  }
+  .dot-red {
+    width: 9px; height: 9px; border-radius: 50%; background: #e53935; display: inline-block;
+  }
+  .dot-yellow {
+    width: 9px; height: 9px; border-radius: 2px; background: #fdd835; border: 1px solid #bfa004; display: inline-block;
+  }
+
+  /* Passage Scroll + Canvas Overlay */
+  .passage-scroll-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+    padding: 12px 16px;
+    font-size: var(--p-font, 14px);
+    line-height: 1.52;
+    color: #111;
+    font-family: "Times New Roman", "Georgia", serif;
+  }
+  .passage-content-layer {
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .passage-canvas-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    cursor: crosshair;
+  }
+  .passage-canvas-layer.eraser-cursor {
+    cursor: cell;
+  }
+  .passage-heading {
+    font-size: calc(var(--p-font, 14px) + 2.5px);
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 8px;
+    font-family: Arial, sans-serif;
+  }
+  .email-box {
+    border: 1px solid #999;
+    background: #fafafa;
+    padding: 6px 10px;
+    margin-bottom: 8px;
+    font-family: Arial, sans-serif;
+    font-size: calc(var(--p-font, 14px) - 1px);
+    line-height: 1.38;
+  }
+  .passage-scroll-wrapper p {
+    margin-bottom: 8px;
+    text-indent: 1.2em;
+  }
+  .email-body p {
+    text-indent: 0;
+    margin-bottom: 7px;
+  }
+  .blank-box {
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    padding: 0 4px;
+    border-bottom: 1.5px solid #222;
+  }
+  .blank-box.current-blank {
+    background: #fff3cd;
+    color: #b45309;
+    border-bottom: 2px solid #d97706;
+  }
+
+  /* Right Question Pane inside Split */
+  .question-pane {
+    width: 45%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 14px;
+    overflow-y: auto;
+    background: #fcfdff;
+    justify-content: center;
+  }
+  .question-pane .choices-wrap {
+    margin-left: 0;
+    margin-top: 10px;
+  }
+  .question-pane .review-check-row {
+    margin-left: 0;
+  }
+
+  /* Bottom Navigation inside Left Exam Area (▲ 前の問題へ / 次の問題へ ▼) */
+  .left-bottom-nav {
+    background: #eef3fa;
+    border-top: 1px solid #c2cfe0;
+    height: 44px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .btn-step {
+    background: linear-gradient(to bottom, #ffffff, #e2e8f0);
+    border: 1px solid #7f92ab;
+    border-radius: 4px;
+    padding: 6px 18px;
+    font-size: 13.5px;
+    font-weight: bold;
+    color: #173561;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+  .btn-step:hover:not(:disabled) {
+    background: linear-gradient(to bottom, #f0f7ff, #d0e2f7);
+  }
+  .btn-step:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  /* =========================================================
+     RIGHT SIDEBAR: "あなたの解答" ANSWER SHEET PANEL
+  ========================================================= */
+  .right-answer-panel {
+    width: 245px;
+    background: #fff;
+    border: 1px solid #9aa8ba;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .ans-panel-header {
+    background: #234b82;
+    color: #fff;
+    font-size: 13.5px;
+    font-weight: bold;
+    text-align: center;
+    padding: 7px 6px;
+    border-bottom: 1px solid #132c4f;
+    flex-shrink: 0;
+  }
+  .ans-list-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px;
+    background: #f8fafc;
+  }
+  .ans-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 3px 6px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  .ans-row:hover {
+    background: #eaf2fb;
+  }
+  .ans-row.active-row {
+    background: #fff3cd;
+    outline: 1.5px solid #f59e0b;
+  }
+  .ans-q-label {
+    font-weight: bold;
+    color: #1e293b;
+    width: 46px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .flag-icon-mini {
+    color: #e65100;
+    font-size: 11px;
+  }
+  .ans-bubbles {
+    display: flex;
+    gap: 4px;
+  }
+  .mini-num {
+    width: 22px;
+    height: 20px;
+    border: 1px solid #94a3b8;
+    border-radius: 3px;
+    background: #fff;
+    color: #334155;
+    font-size: 11.5px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .mini-num:hover {
+    border-color: #1a5fb4;
+  }
+  .mini-num.picked {
+    background: #1a5fb4;
+    border-color: #103c75;
+    color: #fff;
+  }
+  .ans-panel-footer {
+    padding: 8px;
+    background: #eef3fa;
+    border-top: 1px solid #c2cfe0;
+    flex-shrink: 0;
+  }
+  .btn-finish-exam {
+    width: 100%;
+    background: linear-gradient(to bottom, #d9534f, #b52b27);
+    color: #fff;
+    border: 1px solid #8f1f1c;
+    border-radius: 4px;
+    padding: 8px 6px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .btn-finish-exam:hover {
+    background: linear-gradient(to bottom, #e0635f, #c9302c);
+  }
+
+  /* =========================================================
+     DIALOGS (Official 2-step confirmation & Whole Passage Modal)
+  ========================================================= */
+  .dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.48);
+    z-index: 600;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .dialog-backdrop.open {
+    display: flex;
+  }
+  .eiken-dialog {
+    background: #fff;
+    border: 2px solid #234b82;
+    border-radius: 5px;
+    width: 500px;
+    max-width: 94vw;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    overflow: hidden;
+  }
+  .eiken-dialog-head {
+    background: #234b82;
+    color: #fff;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .eiken-dialog-body {
+    padding: 20px 22px;
+    font-size: 14px;
+    line-height: 1.65;
+    color: #111;
+  }
+  .eiken-dialog-btns {
+    padding: 12px 20px;
+    background: #f1f5f9;
+    border-top: 1px solid #cbd5e1;
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+  }
+  .dlg-btn {
+    min-width: 100px;
+    padding: 7px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid #64748b;
+    background: #fff;
+  }
+  .dlg-btn.yes {
+    background: #1a5fb4;
+    color: #fff;
+    border-color: #103c75;
+  }
+
+  /* Whole Passage Popup ("全体表示") */
+  .whole-modal-box {
+    background: #fff;
+    border: 2px solid #234b82;
+    border-radius: 5px;
+    width: 820px;
+    max-width: 94vw;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+  .whole-modal-body {
+    padding: 20px 28px;
+    overflow-y: auto;
+    font-family: "Times New Roman", Georgia, serif;
+    font-size: 15.5px;
+    line-height: 1.65;
+    user-select: text;
+  }
+  .whole-modal-body p {
+    margin-bottom: 12px;
+    text-indent: 1.2em;
+  }
+
+  /* =========================================================
+     RESULT & EXPLANATION SCREEN
+  ========================================================= */
+  .result-page {
+    position: fixed;
+    inset: 0;
+    background: #eef2f6;
+    z-index: 700;
+    display: none;
+    flex-direction: column;
+  }
+  .result-page.active {
+    display: flex;
+  }
+  .result-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+  }
+  .result-inner {
+    max-width: 980px;
+    margin: 0 auto;
+    background: #fff;
+    border: 1px solid #b8c4d4;
+    border-radius: 6px;
+    padding: 24px 28px;
+  }
+  .score-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 16px 0 20px;
+  }
+  .sc-box {
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 12px;
+    text-align: center;
+    background: #f8fafc;
+  }
+  .sc-box.total {
+    background: #173561;
+    color: #fff;
+  }
+  .sc-box .t { font-size: 12px; margin-bottom: 4px; }
+  .sc-box .n { font-size: 22px; font-weight: bold; }
+  .rev-card {
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .rev-card.ok { border-left: 5px solid #16a34a; }
+  .rev-card.ng { border-left: 5px solid #dc2626; background: #fffafa; }
+  .rev-exp {
+    margin-top: 8px;
+    background: #f1f5f9;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+</style>
+</head>
+<body>
+
+<!-- =========================================================
+     START SCREEN (Official Demo Style)
+========================================================= -->
+<div id="screen-start" class="modal-screen active">
+  <div class="demo-top-banner">
+    <span>英検S-CBT体験版 2級 リーディングテスト</span>
+    <span style="font-size:13px; font-weight:normal;">2026年度 第2回 収録版</span>
+  </div>
+  <div class="start-center">
+    <div class="start-box">
+      <div class="grade-pill">Grade 2（2級）</div>
+      <h1>筆記試験（リーディングテスト）</h1>
+      <div class="start-notes">
+        <p><strong>■ 操作方法（本家S-CBT体験版準拠）：</strong></p>
+        <ul style="margin-left:20px; margin-top:6px;">
+          <li><strong>あなたの解答（右パネル）：</strong> 全31問の解答状況が一覧表示され、番号をクリックして直接解答・移動ができます。</li>
+          <li><strong>描画ツール（大問2・3）：</strong> 長文画面上部の「<strong>赤ペン</strong>」「<strong>マーカー</strong>」「<strong>消しゴム</strong>」で、本文に直接フリーハンドで線や丸を書き込めます。「<strong>全体表示</strong>」で長文を大きなウィンドウで開けます。</li>
+          <li><strong>あとで見直す：</strong> 迷った問題にチェックを入れると、右側の「あなたの解答」欄に印がつきます。</li>
+          <li><strong>全画面表示：</strong> キーボードの <strong>F11キー</strong> を押すと本番と同じ全画面になります。</li>
+        </ul>
+      </div>
+      <button class="btn-eiken-start" onclick="startTest()">開始</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     MAIN EXAM INTERFACE (Exact Eiken S-CBT Demo UI)
+========================================================= -->
+<div class="scbt-header">
+  <div class="header-left">
+    <span class="grade-badge">Grade 2</span>
+    <span class="test-title">筆記試験（リーディングテスト）</span>
+  </div>
+  <div class="header-right">
+    <div class="font-ctrl">
+      <span>文字サイズ</span>
+      <button onclick="changeFontScale('small', this)">小</button>
+      <button class="active" onclick="changeFontScale('medium', this)">標準</button>
+      <button onclick="changeFontScale('large', this)">大</button>
+    </div>
+    <div class="time-panel">
+      <span>筆記試験 残り時間</span>
+      <span class="time-val" id="timer-val">45:00</span>
+    </div>
+  </div>
+</div>
+
+<div class="scbt-main">
+  <!-- LEFT QUESTION AREA -->
+  <div class="left-exam-area">
+    <div class="instruction-strip" id="instruction-strip"></div>
+    <div id="question-stage" style="flex:1; display:flex; overflow:hidden;"></div>
+    <div class="left-bottom-nav">
+      <button class="btn-step" id="btn-prev" onclick="moveStep(-1)">▲ 前の問題へ</button>
+      <span id="page-indicator" style="font-size:13px; font-weight:bold; color:#173561;"></span>
+      <button class="btn-step" id="btn-next" onclick="moveStep(1)">次の問題へ ▼</button>
+    </div>
+  </div>
+
+  <!-- RIGHT "あなたの解答" PANEL -->
+  <div class="right-answer-panel">
+    <div class="ans-panel-header">あなたの解答</div>
+    <div class="ans-list-scroll" id="ans-list-scroll"></div>
+    <div class="ans-panel-footer">
+      <button class="btn-finish-exam" onclick="openConfirm1()">筆記試験を終了して試験終了</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     OFFICIAL 2-STEP CONFIRMATION DIALOGS & WHOLE PASSAGE MODAL
+========================================================= -->
+<div class="dialog-backdrop" id="dialog-confirm-1">
+  <div class="eiken-dialog">
+    <div class="eiken-dialog-head">
+      <span>筆記試験（リーディングテスト）の終了</span>
+      <button onclick="closeDialogs()" style="background:none;border:none;color:#fff;cursor:pointer;font-weight:bold;">Close ✕</button>
+    </div>
+    <div class="eiken-dialog-body">
+      <p id="unanswered-warning" style="color:#c82333; font-weight:bold; margin-bottom:8px;"></p>
+      <p>筆記試験（リーディングテスト）はすべて解答済みですか？<br>
+      一度「はい」を押すと、筆記試験は終了となり、試験に戻ることはできません。<br>
+      まだ、未解答の問題や見直したい問題が残っている場合は、「いいえ」を押して試験に戻ってください。<br><br>
+      筆記試験を終了する場合は、「はい」を押してください。</p>
+    </div>
+    <div class="eiken-dialog-btns">
+      <button class="dlg-btn yes" onclick="openConfirm2()">はい</button>
+      <button class="dlg-btn" onclick="closeDialogs()">いいえ</button>
+    </div>
+  </div>
+</div>
+
+<div class="dialog-backdrop" id="dialog-confirm-2">
+  <div class="eiken-dialog">
+    <div class="eiken-dialog-head">
+      <span>筆記試験（リーディングテスト）の終了</span>
+      <button onclick="closeDialogs()" style="background:none;border:none;color:#fff;cursor:pointer;font-weight:bold;">Close ✕</button>
+    </div>
+    <div class="eiken-dialog-body">
+      <p><strong>本当に筆記試験（リーディングテスト）を終了しますか？</strong><br><br>
+      一度「はい」を押すと、筆記試験は終了となり、試験に戻ることはできません。<br>
+      筆記試験を終了する場合は、「はい」を押してください。</p>
+    </div>
+    <div class="eiken-dialog-btns">
+      <button class="dlg-btn yes" onclick="completeExam()">はい</button>
+      <button class="dlg-btn" onclick="closeDialogs()">いいえ</button>
+    </div>
+  </div>
+</div>
+
+<!-- WHOLE PASSAGE MODAL ("全体表示") -->
+<div class="dialog-backdrop" id="dialog-whole">
+  <div class="whole-modal-box">
+    <div class="eiken-dialog-head">
+      <span id="whole-modal-title">長文 全体表示</span>
+      <button onclick="closeDialogs()" style="background:none;border:none;color:#fff;cursor:pointer;font-weight:bold;">Close ✕</button>
+    </div>
+    <div class="whole-modal-body" id="whole-modal-body"></div>
+    <div class="eiken-dialog-btns">
+      <button class="dlg-btn" onclick="closeDialogs()">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     RESULT & EXPLANATION SCREEN
+========================================================= -->
+<div class="result-page" id="screen-result">
+  <div class="demo-top-banner">
+    <span>英検S-CBT体験版 2級 リーディングテスト 採点結果・解説</span>
+    <button onclick="location.reload()" style="background:#fff;color:#1a3b6e;border:none;padding:4px 14px;border-radius:3px;font-weight:bold;cursor:pointer;">最初からやり直す</button>
+  </div>
+  <div class="result-scroll">
+    <div class="result-inner">
+      <h2 style="font-size:19px; color:#173561;">2026年度 第2回 実用英語技能検定 2級 リーディング結果</h2>
+      <div class="score-summary-grid" id="score-summary-grid"></div>
+      <div style="margin-bottom:14px; display:flex; gap:8px;">
+        <button class="draw-btn active" id="flt-all" onclick="renderExplanations('all')">すべて表示 (31問)</button>
+        <button class="draw-btn" id="flt-ng" onclick="renderExplanations('ng')">不正解・未解答のみ</button>
+        <button class="draw-btn" id="flt-rev" onclick="renderExplanations('rev')">「あとで見直す」をつけた問題</button>
+      </div>
+      <div id="explanations-container"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// =========================================================
+// 2026年度 第2回 英検2級 リーディング問題データ (全31問)
+// =========================================================
+const PASSAGES = {
+  "2A": {
+    title: "A New Service on the Mountain",
+    instruction: "次の英文 A, B を読み、その文意にそって (18) から (23) までの ( ) に入れるのに最も適切なものを 1, 2, 3, 4 の中から一つ選びなさい。",
+    isEmail: false,
+    paragraphs: [
+      `In the early 2020s, the Tanzanian government installed high-speed Internet access points on Mount Kilimanjaro for people to use. The first one was set up at Horombo Huts, high on the mountain's slopes. Later, more access points were placed along the climbing route. This made it easier for climbers to contact their guides and request rescue in case of emergencies. It also enabled mountain workers to communicate about navigation and to <span class="blank-box" data-q="18">( 18 )</span>. This can prepare them for sudden changes on the mountain, ensuring their safety.`,
+      `Another purpose of making the Internet available on Mount Kilimanjaro was to boost the tourism industry. Mount Kilimanjaro has long been a popular tourist destination, attracting many visitors from around the world. Tourists can now post pictures and videos during their climb. <span class="blank-box" data-q="19">( 19 )</span>, they can share their experiences in real time and show the challenges they had on the mountain. Fortunately for tourists, Internet access on Mount Kilimanjaro has now been expanded all the way to its summit.`,
+      `However, not everyone was happy. Some critics said the government was giving more attention to tourists. Many rural communities in Tanzania <span class="blank-box" data-q="20">( 20 )</span>. Therefore, there were criticisms that the resources should be used more to improve communication services for local residents. On the other hand, some people welcomed the new service for its safety benefits and emergency communication on the mountain. In short, the project has caused debate, but it has also changed how people stay safe while climbing Mount Kilimanjaro and how they share their journeys in real time.`
+    ]
+  },
+  "2B": {
+    title: "Bats",
+    instruction: "次の英文 A, B を読み、その文意にそって (18) から (23) までの ( ) に入れるのに最も適切なものを 1, 2, 3, 4 の中から一つ選びなさい。",
+    isEmail: false,
+    paragraphs: [
+      `Bats play an important role both for the natural environment and people's lives. They eat many insects, such as flies and moths, that harm plants. Since one bat can eat thousands of insects a night, farmers can reduce the amount of chemicals they use on their crops. In addition, bats help many plants grow by <span class="blank-box" data-q="21">( 21 )</span>. This allows new plants to start growing far from the parent plant.`,
+      `Unfortunately, bat populations are falling across the globe. If the number continues to decline, a serious problem might occur for the environment and food production.`,
+      `In some parts of North America, many bats are dying from a disease called white-nose syndrome. The name comes from white marks on the faces or wings of sleeping bats. It spreads in the caves and tunnels where bats sleep for the winter. The disease wakes up the bats from their winter sleep. <span class="blank-box" data-q="22">( 22 )</span>, once awake, they begin to move around, causing them to lose the body fat that they have stored. Since there are not enough food sources during the winter, many bats end up dying.`,
+      `Scientists and activists are taking various measures to protect the bat population. For example, they enter caves in winter to count and monitor the bats. Special habitats, such as artificial caves, have also been created to give bats safe places to rest. Also, experts are studying what various bats need to <span class="blank-box" data-q="23">( 23 )</span>. They attach small tracking devices to monitor their activities and understand how these bats maintain energy during the winter months.`
+    ]
+  },
+  "3A": {
+    title: "Question about some furniture",
+    instruction: "次の英文 A, B の内容に関して、(24) から (31) までの質問に対して最も適切なもの、または文を完成させるのに最も適切なものを 1, 2, 3, 4 の中から一つ選びなさい。",
+    isEmail: true,
+    emailMeta: {
+      From: "Katy Lewis <klewis@moonwave.com>",
+      To: "George Henderson <ghenderson@earthlinker.com>",
+      Date: "February 8",
+      Subject: "Question about some furniture"
+    },
+    paragraphs: [
+      `Dear George Henderson,`,
+      `My name is Katy Lewis, and I run a craft shop in the neighboring city. We are going to renovate our shop and want to give away some of the furniture. Currently, we have some tables and shelves. We'll no longer need them as the shop's layout is being changed. The furniture is all in good condition, and I thought a secondhand shop like yours might be able to accept it.`,
+      `We have five pieces in total. They are made of wood and are not too big, just the right size for a regular-sized shop. They have some scratches, but not large scratches that require repair. Even though each one isn't very large, all five together are still too heavy to carry without a truck. Could you come to pick them up? Would there be a cost for doing that?`,
+      `In case you are unable to accept the items, I will need to check whether other shops might want them. I don't want to throw the items away if someone can still use them. Contacting other shops and waiting for their replies may take some time, so I would appreciate it if you could let me know soon. Since the renovation crew will start working in two weeks, please let me know what you think about this by this Friday.`,
+      `Sincerely,\nKaty Lewis\nMoonwave Craft Shop`
+    ]
+  },
+  "3B": {
+    title: "Shopping Carts",
+    instruction: "次の英文 A, B の内容に関して、(24) から (31) までの質問に対して最も適切なもの、または文を完成させるのに最も適切なものを 1, 2, 3, 4 の中から一つ選びなさい。",
+    isEmail: false,
+    paragraphs: [
+      `The shopping cart was invented by Sylvan Goldman in the 1930s. He noticed that shoppers had difficulty continuing shopping because their baskets became too heavy to carry, and he looked for a solution. His first shopping cart was made of a simple chair that could be folded. It had two baskets and wheels. With this shopping cart, people did not have to carry heavy baskets anymore. They could push the cart instead. Soon after, he introduced the carts at his store and hoped to change the way people shopped.`,
+      `Before the invention, people carried baskets around with their arms while shopping. Therefore, it was difficult to shop for many items at once, and they often stopped shopping once the basket was too heavy to carry. As supermarkets grew larger and more people began driving cars, people started buying more items in a single shopping trip. Shopping carts could be helpful to both shoppers, who could shop easily and conveniently, and supermarket owners, who could increase their sales.`,
+      `However, at first, shoppers did not like using shopping carts. Some women thought shopping carts looked like baby strollers, which were used for carrying babies, and some men thought using the carts without holding baskets themselves would make them look less manly. Goldman had to find a clever way to change their minds. He hired people who walked around his store pushing the shopping carts and demonstrating how useful the carts were. When customers saw others using the carts comfortably, they started using them too. Soon, shopping carts became popular and widely accepted, and other stores wanted to buy them for their own customers.`,
+      `Shopping carts have been improved over time. In the middle of the twentieth century, a new cart was designed so that many carts could be stored in a smaller area. Later, a safety belt for children's seats was also added as people looked for safer ways to shop with young children. Nowadays, millions of shopping carts are widely used in stores around the world. The invention of shopping carts made shopping much easier, allowed stores to grow larger, and fundamentally changed the way people buy groceries and other household goods.`
+    ]
+  }
+};
+
+const QUESTIONS = [
+  { num: 1, part: 1, stem: "Visitors to the art gallery are told to behave (      ) in accordance with the rules. Anyone who does not follow the rules will be asked to leave.", options: ["unfairly", "conveniently", "cheerfully", "strictly"], ans: 4, exp: "「美術館の来館者は規則に従って厳格に（strictly）行動するよう言われている。規則を守らない人は退館を求められる。」" },
+  { num: 2, part: 1, stem: "Sarah learned the (      ) of keeping her workspace organized after she missed an urgent document. Now, she always tidies up her desk at the end of each day.", options: ["speed", "importance", "courage", "difference"], ans: 2, exp: "「サラは緊急の書類を見落とした後、作業スペースを整理しておくことの重要性（importance）を学んだ。」" },
+  { num: 3, part: 1, stem: "A: Do you think that cats are easier to keep as pets than dogs?\nB: No, I (      ) to prefer dogs. They are friendlier, and they listen to what you say.", options: ["reflect", "struggle", "tend", "invest"], ans: 3, exp: "tend to do（〜する傾向がある、どちらかといえば〜だ）。" },
+  { num: 4, part: 1, stem: "The soccer game was (      ) because of heavy rain. It was rescheduled for the following Saturday.", options: ["postponed", "concealed", "rewarded", "emphasized"], ans: 1, exp: "「大雨のためサッカーの試合は延期された（postponed）。翌週の土曜日に日程が変更された。」" },
+  { num: 5, part: 1, stem: "Police said that the trouble at last night's soccer game was caused by a small (      ) of people. Most fans behaved well and just watched the match.", options: ["opportunity", "profit", "experiment", "minority"], ans: 4, exp: "a small minority of people（ごく少数の人々）。後ろの Most fans と対比。" },
+  { num: 6, part: 1, stem: "A: The student council said they would make a (      ) about what to do with the money from the school festival.\nB: Really? I'd like to hear their ideas.", options: ["proposal", "sensation", "narrative", "collection"], ans: 1, exp: "make a proposal（提案をする）。" },
+  { num: 7, part: 1, stem: "These days, scientists can (      ) how the weather will be in the near future by using technology like satellites and radar.", options: ["squeeze", "predict", "reject", "execute"], ans: 2, exp: "「科学者は人工衛星やレーダーを使って近い将来の天気を予測する（predict）ことができる。」" },
+  { num: 8, part: 1, stem: "Bill used to be (      ) by the problems faced by developing countries. After visiting a few, though, he became more interested in trying to help.", options: ["unconcerned", "jealous", "capable", "disabled"], ans: 1, exp: "「ビルはかつて発展途上国が直面する問題に無関心（unconcerned）だった。」" },
+  { num: 9, part: 1, stem: "The detective was trying to solve a (      ), but he could not find any clues. Then, a witness came forward and told him what she had seen.", options: ["theme", "treasure", "pleasure", "murder"], ans: 4, exp: "「刑事は殺人事件（murder）を解決しようとしていたが、手がかりが見つからなかった。」" },
+  { num: 10, part: 1, stem: "Some people think that life (      ) on other planets, but others believe that Earth is the only place with living things.", options: ["forgives", "exists", "prays", "stares"], ans: 2, exp: "「他の惑星にも生命が存在する（exists）と考える人もいる。」" },
+  { num: 11, part: 1, stem: "A: Look at all these people waiting for the concert to start! What can we do to (      )?\nB: Let's find a coffee shop where we can sit and chat.", options: ["break down", "lose sight", "kill time", "meet needs"], ans: 3, exp: "kill time（時間をつぶす）。" },
+  { num: 12, part: 1, stem: "The teacher told her students to (      ) cars when they cross the street. She said that they should be very careful.", options: ["watch out for", "come up with", "go back on", "look up to"], ans: 1, exp: "watch out for 〜（〜に気をつける、注意する）。" },
+  { num: 13, part: 1, stem: "The new computer program has some problems, but (      ) it is very good. Most people who use it are happy with it.", options: ["for this reason", "in other words", "on the whole", "in that case"], ans: 3, exp: "on the whole（概して、全体的には）。" },
+  { num: 14, part: 1, stem: "Tom was at a concert, but he was standing far away from the stage. He had to (      ) the crowd to get closer to the music.", options: ["take his turn at", "pull his weight in", "make his way through", "put his hand on"], ans: 3, exp: "make one's way through 〜（〜をかき分けて進む）。" },
+  { num: 15, part: 1, stem: "A: Have you and Kevin been friends for a long time?\nB: Yes. We've been friends (      ) we were in third grade.", options: ["in case", "ever since", "as though", "but for"], ans: 2, exp: "ever since 〜（〜して以来ずっと）。" },
+  { num: 16, part: 1, stem: "When children play with toys, it is natural for them to (      ). Parents should teach them to clean up afterward.", options: ["take a chance", "make a mess", "take a break", "make a living"], ans: 2, exp: "make a mess（散らかす）。" },
+  { num: 17, part: 1, stem: "Laura likes to listen to music while studying, but Bob does not. He feels it (      ) his concentration.", options: ["interferes with", "bursts into", "accounts for", "graduates from"], ans: 1, exp: "interfere with 〜（〜の邪魔をする、妨げる）。" },
+
+  { num: 18, part: 2, passageId: "2A", stem: "空所 ( 18 ) に入る最も適切なものを1つ選びなさい。", options: ["check the current weather", "carry extra equipment", "take photos of the mountain", "arrange accommodation in town"], ans: 1, exp: "直後の「山の急な変化に備えることができ、安全が確保される」につながる「現在の天気を確認する（check the current weather）」が正解。" },
+  { num: 19, part: 2, passageId: "2A", stem: "空所 ( 19 ) に入る最も適切なものを1つ選びなさい。", options: ["Instead", "By doing so", "In contrast", "Otherwise"], ans: 2, exp: "前文「写真や動画を投稿できるようになった」を受け、「そうすることで（By doing so）、リアルタイムで体験を共有できる」。" },
+  { num: 20, part: 2, passageId: "2A", stem: "空所 ( 20 ) に入る最も適切なものを1つ選びなさい。", options: ["always share pictures with tourists", "recently built new public schools", "already use the Internet freely", "still lack reliable Internet access"], ans: 4, exp: "「タンザニアの多くの農村地域では、いまだに信頼できるインターネット接続が不足している（still lack reliable Internet access）」。" },
+
+  { num: 21, part: 2, passageId: "2B", stem: "空所 ( 21 ) に入る最も適切なものを1つ選びなさい。", options: ["keeping their flowers and leaves clean", "living under the leaves of large plants", "eating the unnecessary leaves of plants", "carrying their seeds to different places"], ans: 4, exp: "直後「これにより新しい植物が親植物から離れた場所で育ち始めることができる」より、「種子をさまざまな場所へ運ぶこと（carrying their seeds to different places）」。" },
+  { num: 22, part: 2, passageId: "2B", stem: "空所 ( 22 ) に入る最も適切なものを1つ選びなさい。", options: ["For this purpose", "As a result", "Likewise", "On the other hand"], ans: 2, exp: "病気で冬眠から目覚めさせられ、「その結果（As a result）、動き回り始めて体脂肪を失う」。" },
+  { num: 23, part: 2, passageId: "2B", stem: "空所 ( 23 ) に入る最も適切なものを1つ選びなさい。", options: ["travel to warmer countries", "survive the cold winter", "give birth in the caves", "sleep in large groups"], ans: 2, exp: "次文「冬の間どのようにエネルギーを維持しているかを理解するため」より、「寒い冬を生き延びる（survive the cold winter）」。" },
+
+  { num: 24, part: 3, passageId: "3A", stem: "Why does Katy Lewis write this email to George Henderson?", options: ["Because she is searching for furniture that suits her new layout.", "Because she is planning to sell her shop to someone in the city.", "Because she wants to offer some used items for his shop.", "Because she hopes to sell handmade items at his secondhand shop."], ans: 3, exp: "第1段落「店の改装に伴い不要になる家具（テーブルや棚）を、あなたのリサイクルショップに譲りたい（offer some used items for his shop）」より3が正解。" },
+  { num: 25, part: 3, passageId: "3A", stem: "Katy wishes somebody from George's shop would visit her because", options: ["she cannot transport all five items without the shop's help.", "she cannot sell the items without having them checked beforehand.", "the shop cannot receive her payment through an online system.", "the shop cannot accept items delivered by mail or in person."], ans: 1, exp: "第2段落「5点すべてを合わせるとトラックなしでは運べないほど重い。取りに来てもらえますか？」より1が正解。" },
+  { num: 26, part: 3, passageId: "3A", stem: "Katy wants a reply by Friday because", options: ["she should close the shop permanently on that day as planned.", "she may need time to ask other shops if they are interested.", "the renovation team may want to use the furniture.", "the renovation work will begin sometime this week."], ans: 2, exp: "第3段落「引き取れない場合、他の店に連絡して返信を待つには時間がかかるかもしれないため、今週の金曜日までに教えてほしい」より2が正解。" },
+
+  { num: 27, part: 3, passageId: "3B", stem: "The first shopping cart designed by Sylvan Goldman was", options: ["a rolling chair with one fixed basket that people could not fold.", "a folding chair with wheels and two baskets used for easy shopping.", "a chair with two handles that came off easily and four wheels.", "a chair with one large basket under the seat and no wheels."], ans: 2, exp: "第1段落「折りたためるシンプルな椅子に、2つのかごと車輪がついたもの（a folding chair with wheels and two baskets）」より2が正解。" },
+  { num: 28, part: 3, passageId: "3B", stem: "Why did people start buying more items in a single shopping trip?", options: ["The size of the supermarkets and the number of shoppers with cars increased.", "Supermarkets began to provide shopping baskets that shoppers could take home.", "Store owners offered various discounts for those people who bought large amounts.", "People's lifestyles became busier, and they could not find time for shopping."], ans: 1, exp: "第2段落「スーパーマーケットが大型化し、車を運転する買い物客が増えたため」より1が正解。" },
+  { num: 29, part: 3, passageId: "3B", stem: "Goldman convinced shoppers to use shopping carts by", options: ["offering them special discounts for using the carts.", "changing their design to make the carts more appealing.", "showing men using the carts in the store in advertisements.", "hiring people to demonstrate using the carts in the store."], ans: 4, exp: "第3段落「カートを押して店内を歩き回り、便利さを実演する人々を雇った（hiring people to demonstrate using the carts in the store）」より4が正解。" },
+  { num: 30, part: 3, passageId: "3B", stem: "In the middle of the twentieth century,", options: ["shoppers had to pay an extra cost for using shopping carts inside supermarkets.", "supermarkets prohibited young children from sitting in shopping carts.", "shoppers could put more items in shopping carts because a new cart was designed.", "supermarkets could save space for shopping carts thanks to the new cart design."], ans: 4, exp: "第4段落「より狭いスペースに多くのカートを収納できる新しいカートが設計された（save space for shopping carts）」より4が正解。" },
+  { num: 31, part: 3, passageId: "3B", stem: "Which of the following statements is true?", options: ["Shopping carts were thought to be beneficial for both shoppers and supermarket owners.", "Shopping carts were invented so that people could buy large items like furniture.", "Goldman's initial shopping cart design had a child seat with a safety belt.", "Many women preferred to use their baby strollers as shopping carts."], ans: 1, exp: "第2段落「買い物客とスーパーのオーナーの双方にとって有益だった（beneficial for both shoppers and supermarket owners）」より1が正解。" }
+];
+
+// =========================================================
+// STATE
+// =========================================================
+let currentIndex = 0;
+let answers = {};       // { 1: 4, ... }
+let reviewFlags = {};   // { 1: true, ... }
+let remainingSec = 45 * 60;
+let timerId = null;
+
+// Canvas Drawing State per Passage
+let activeTool = 'red'; // 'red' | 'marker' | 'eraser'
+let canvasStore = {};   // { "2A": dataURL, ... }
+let isDrawing = false;
+let lastX = 0;
+let lastY = 0;
+
+// =========================================================
+// INITIALIZATION
+// =========================================================
+function startTest() {
+  document.getElementById('screen-start').classList.remove('active');
+  buildRightAnswerPanel();
+  renderQuestion();
+  startCountdown();
+}
+
+function startCountdown() {
+  if (timerId) clearInterval(timerId);
+  timerId = setInterval(() => {
+    remainingSec--;
+    if (remainingSec <= 0) {
+      remainingSec = 0;
+      updateTimerDisplay();
+      clearInterval(timerId);
+      alert("試験時間が終了しました。採点画面へ移動します。");
+      completeExam();
+      return;
+    }
+    updateTimerDisplay();
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(remainingSec / 60);
+  const s = remainingSec % 60;
+  document.getElementById('timer-val').textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function changeFontScale(scale, btn) {
+  document.querySelectorAll('.font-ctrl button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const root = document.documentElement;
+  if (scale === 'small') {
+    root.style.setProperty('--q-font', '13.5px');
+    root.style.setProperty('--p-font', '12.5px');
+  } else if (scale === 'medium') {
+    root.style.setProperty('--q-font', '15px');
+    root.style.setProperty('--p-font', '14px');
+  } else {
+    root.style.setProperty('--q-font', '16.5px');
+    root.style.setProperty('--p-font', '15.5px');
+  }
+  const q = QUESTIONS[currentIndex];
+  if (q.passageId) {
+    saveCanvasState(q.passageId);
+    setTimeout(() => initPassageCanvas(q.passageId), 30);
+  }
+}
+
+// =========================================================
+// RIGHT SIDEBAR: "あなたの解答" PANEL
+// =========================================================
+function buildRightAnswerPanel() {
+  const container = document.getElementById('ans-list-scroll');
+  container.innerHTML = QUESTIONS.map((q, idx) => {
+    const picked = answers[q.num];
+    const flagged = !!reviewFlags[q.num];
+    const isCur = idx === currentIndex;
+    return `
+      <div class="ans-row ${isCur ? 'active-row' : ''}" id="ans-row-${q.num}" onclick="jumpToQuestion(${idx})">
+        <div class="ans-q-label">
+          <span>(${q.num})</span>
+          <span class="flag-icon-mini" id="flag-mini-${q.num}">${flagged ? '🚩' : ''}</span>
+        </div>
+        <div class="ans-bubbles">
+          ${[1, 2, 3, 4].map(n => `
+            <div class="mini-num ${picked === n ? 'picked' : ''}"
+                 id="mini-${q.num}-${n}"
+                 onclick="event.stopPropagation(); pickAnswer(${q.num}, ${n}, ${idx})">${n}</div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateRightAnswerPanel() {
+  QUESTIONS.forEach((q, idx) => {
+    const row = document.getElementById(`ans-row-${q.num}`);
+    if (!row) return;
+    row.classList.toggle('active-row', idx === currentIndex);
+
+    const flagEl = document.getElementById(`flag-mini-${q.num}`);
+    if (flagEl) flagEl.textContent = reviewFlags[q.num] ? '🚩' : '';
+
+    [1, 2, 3, 4].forEach(n => {
+      const bubble = document.getElementById(`mini-${q.num}-${n}`);
+      if (bubble) bubble.classList.toggle('picked', answers[q.num] === n);
+    });
+  });
+
+  const activeRow = document.getElementById(`ans-row-${QUESTIONS[currentIndex].num}`);
+  if (activeRow) {
+    activeRow.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+// =========================================================
+// RENDER QUESTION STAGE (PART 1 vs PART 2/3 SPLIT)
+// =========================================================
+function renderQuestion() {
+  const q = QUESTIONS[currentIndex];
+  const instStrip = document.getElementById('instruction-strip');
+  const stage = document.getElementById('question-stage');
+
+  document.getElementById('page-indicator').textContent = `問題 (${q.num}) / 全 31 問`;
+  document.getElementById('btn-prev').disabled = (currentIndex === 0);
+  document.getElementById('btn-next').disabled = (currentIndex === QUESTIONS.length - 1);
+
+  if (q.part === 1) {
+    instStrip.innerHTML = `<span>次の (1) から (17) までの ( ) に入れるのに最も適切なものを 1, 2, 3, 4 の中から一つ選びなさい。</span><span>大問 1</span>`;
+    stage.innerHTML = `
+      <div class="part1-container">
+        <div class="q-block">
+          <div class="q-top-row">
+            <div class="q-paren-num">(${q.num})</div>
+            <div class="q-text-body">${escapeHtml(q.stem)}</div>
+          </div>
+          <div class="choices-wrap">
+            ${q.options.map((opt, i) => renderChoiceRow(q.num, i + 1, opt)).join('')}
+          </div>
+          <div class="review-check-row">
+            <button class="btn-review-toggle ${reviewFlags[q.num] ? 'checked' : ''}" onclick="toggleReview(${q.num})">
+              <span class="check-sq">${reviewFlags[q.num] ? '✓' : ''}</span>
+              <span>あとで見直す</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    const pData = PASSAGES[q.passageId];
+    instStrip.innerHTML = `<span>${pData.instruction}</span><span>大問 ${q.passageId}</span>`;
+
+    const passageInner = buildPassageHtml(q.passageId, q.num);
+    stage.innerHTML = `
+      <div class="split-container">
+        <div class="passage-pane">
+          <div class="drawing-toolbar">
+            <div class="tool-group">
+              <button class="draw-btn ${activeTool === 'red' ? 'active' : ''}" id="tool-red" onclick="setDrawTool('red')">
+                <span class="dot-red"></span> 赤ペン
+              </button>
+              <button class="draw-btn ${activeTool === 'marker' ? 'active' : ''}" id="tool-marker" onclick="setDrawTool('marker')">
+                <span class="dot-yellow"></span> マーカー
+              </button>
+              <button class="draw-btn ${activeTool === 'eraser' ? 'active' : ''}" id="tool-eraser" onclick="setDrawTool('eraser')">
+                消しゴム
+              </button>
+              <button class="draw-btn" onclick="clearPassageCanvas('${q.passageId}')" title="書き込みをすべて消す">
+                全消去
+              </button>
+            </div>
+            <button class="draw-btn" onclick="openWholePassage('${q.passageId}')">全体表示</button>
+          </div>
+          <div class="passage-scroll-wrapper" id="passage-scroll-wrapper">
+            <div class="passage-content-layer" id="passage-content-layer">
+              ${passageInner}
+            </div>
+            <canvas class="passage-canvas-layer ${activeTool === 'eraser' ? 'eraser-cursor' : ''}" id="passage-canvas"></canvas>
+          </div>
+        </div>
+
+        <div class="question-pane">
+          <div class="q-top-row">
+            <div class="q-paren-num">(${q.num})</div>
+            <div class="q-text-body">${escapeHtml(q.stem)}</div>
+          </div>
+          <div class="choices-wrap">
+            ${q.options.map((opt, i) => renderChoiceRow(q.num, i + 1, opt)).join('')}
+          </div>
+          <div class="review-check-row">
+            <button class="btn-review-toggle ${reviewFlags[q.num] ? 'checked' : ''}" onclick="toggleReview(${q.num})">
+              <span class="check-sq">${reviewFlags[q.num] ? '✓' : ''}</span>
+              <span>あとで見直す</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    requestAnimationFrame(() => initPassageCanvas(q.passageId));
+  }
+
+  updateRightAnswerPanel();
+}
+
+function buildPassageHtml(pid, activeQNum) {
+  const p = PASSAGES[pid];
+  let html = '';
+  if (p.isEmail) {
+    html += `
+      <div class="email-box">
+        <div><strong>From:</strong> ${escapeHtml(p.emailMeta.From)}</div>
+        <div><strong>To:</strong> ${escapeHtml(p.emailMeta.To)}</div>
+        <div><strong>Date:</strong> ${escapeHtml(p.emailMeta.Date)}</div>
+        <div><strong>Subject:</strong> ${escapeHtml(p.emailMeta.Subject)}</div>
+      </div>
+      <div class="email-body">
+        ${p.paragraphs.map(par => `<p>${par.replace(/\n/g, '<br>')}</p>`).join('')}
+      </div>
+    `;
+  } else {
+    html += `<div class="passage-heading">${escapeHtml(p.title)}</div>`;
+    html += p.paragraphs.map(par => `<p>${par}</p>`).join('');
+  }
+
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = html;
+  wrapper.querySelectorAll('.blank-box').forEach(el => {
+    if (parseInt(el.dataset.q, 10) === activeQNum) {
+      el.classList.add('current-blank');
+    }
+  });
+  return wrapper.innerHTML;
+}
+
+function renderChoiceRow(qNum, optIdx, text) {
+  const isSel = answers[qNum] === optIdx;
+  return `
+    <div class="choice-row ${isSel ? 'selected' : ''}" onclick="pickAnswer(${qNum}, ${optIdx}, ${currentIndex})">
+      <div class="choice-num-box">${optIdx}</div>
+      <div>${escapeHtml(text)}</div>
+    </div>
+  `;
+}
+
+// =========================================================
+// FREEHAND CANVAS DRAWING (赤ペン / マーカー / 消しゴム)
+// =========================================================
+function setDrawTool(tool) {
+  activeTool = tool;
+  document.querySelectorAll('.drawing-toolbar .draw-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById(`tool-${tool}`);
+  if (btn) btn.classList.add('active');
+
+  const canvas = document.getElementById('passage-canvas');
+  if (canvas) {
+    canvas.classList.toggle('eraser-cursor', tool === 'eraser');
+  }
+}
+
+function initPassageCanvas(pid) {
+  const wrapper = document.getElementById('passage-scroll-wrapper');
+  const content = document.getElementById('passage-content-layer');
+  const canvas = document.getElementById('passage-canvas');
+  if (!wrapper || !content || !canvas) return;
+
+  const w = wrapper.clientWidth;
+  const h = Math.max(wrapper.clientHeight, content.offsetHeight + 24);
+  canvas.width = w;
+  canvas.height = h;
+
+  const ctx = canvas.getContext('2d');
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  if (canvasStore[pid]) {
+    const img = new Image();
+    img.onload = () => ctx.drawImage(img, 0, 0);
+    img.src = canvasStore[pid];
+  }
+
+  const getCoords = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
+  };
+
+  const startDraw = (e) => {
+    isDrawing = true;
+    const pos = getCoords(e);
+    lastX = pos.x;
+    lastY = pos.y;
+  };
+
+  const draw = (e) => {
+    if (!isDrawing) return;
+    e.preventDefault();
+    const pos = getCoords(e);
+
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(pos.x, pos.y);
+
+    if (activeTool === 'red') {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = 'rgba(229, 57, 53, 0.9)';
+      ctx.lineWidth = 2.2;
+    } else if (activeTool === 'marker') {
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.strokeStyle = 'rgba(255, 235, 59, 0.45)';
+      ctx.lineWidth = 14;
+    } else if (activeTool === 'eraser') {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.lineWidth = 18;
+    }
+
+    ctx.stroke();
+    lastX = pos.x;
+    lastY = pos.y;
+  };
+
+  const endDraw = () => {
+    if (!isDrawing) return;
+    isDrawing = false;
+    saveCanvasState(pid);
+  };
+
+  canvas.onmousedown = startDraw;
+  canvas.onmousemove = draw;
+  window.onmouseup = endDraw;
+
+  canvas.ontouchstart = startDraw;
+  canvas.ontouchmove = draw;
+  canvas.ontouchend = endDraw;
+}
+
+function saveCanvasState(pid) {
+  const canvas = document.getElementById('passage-canvas');
+  if (canvas && pid) {
+    canvasStore[pid] = canvas.toDataURL();
+  }
+}
+
+function clearPassageCanvas(pid) {
+  const canvas = document.getElementById('passage-canvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    delete canvasStore[pid];
+  }
+}
+
+// =========================================================
+// NAVIGATION & ANSWER SELECTION
+// =========================================================
+function pickAnswer(qNum, optIdx, targetIdx) {
+  answers[qNum] = optIdx;
+  if (targetIdx !== currentIndex) {
+    saveBeforeMove();
+    currentIndex = targetIdx;
+  }
+  renderQuestion();
+}
+
+function toggleReview(qNum) {
+  if (reviewFlags[qNum]) {
+    delete reviewFlags[qNum];
+  } else {
+    reviewFlags[qNum] = true;
+  }
+  renderQuestion();
+}
+
+function saveBeforeMove() {
+  const curQ = QUESTIONS[currentIndex];
+  if (curQ && curQ.passageId) {
+    saveCanvasState(curQ.passageId);
+  }
+}
+
+function moveStep(delta) {
+  const nextIdx = currentIndex + delta;
+  if (nextIdx >= 0 && nextIdx < QUESTIONS.length) {
+    saveBeforeMove();
+    currentIndex = nextIdx;
+    renderQuestion();
+  }
+}
+
+function jumpToQuestion(idx) {
+  if (idx === currentIndex) return;
+  saveBeforeMove();
+  currentIndex = idx;
+  renderQuestion();
+}
+
+// =========================================================
+// WHOLE PASSAGE POPUP & 2-STEP FINISH DIALOGS
+// =========================================================
+function openWholePassage(pid) {
+  const p = PASSAGES[pid];
+  document.getElementById('whole-modal-title').textContent = `全体表示：${p.title}`;
+  const body = document.getElementById('whole-modal-body');
+  if (p.isEmail) {
+    body.innerHTML = `
+      <div class="email-box" style="font-size:14px;">
+        <div><strong>From:</strong> ${escapeHtml(p.emailMeta.From)}</div>
+        <div><strong>To:</strong> ${escapeHtml(p.emailMeta.To)}</div>
+        <div><strong>Date:</strong> ${escapeHtml(p.emailMeta.Date)}</div>
+        <div><strong>Subject:</strong> ${escapeHtml(p.emailMeta.Subject)}</div>
+      </div>
+      ${p.paragraphs.map(par => `<p style="text-indent:0;">${par.replace(/\n/g, '<br>')}</p>`).join('')}
+    `;
+  } else {
+    body.innerHTML = `
+      <h3 style="text-align:center; margin-bottom:14px; font-family:Arial,sans-serif;">${escapeHtml(p.title)}</h3>
+      ${p.paragraphs.map(par => `<p>${par}</p>`).join('')}
+    `;
+  }
+  document.getElementById('dialog-whole').classList.add('open');
+}
+
+function openConfirm1() {
+  const unanswered = QUESTIONS.filter(q => answers[q.num] === undefined).length;
+  const warnEl = document.getElementById('unanswered-warning');
+  warnEl.textContent = unanswered > 0 ? `※現在、未解答の問題が ${unanswered} 問あります。` : '';
+  document.getElementById('dialog-confirm-1').classList.add('open');
+}
+
+function openConfirm2() {
+  document.getElementById('dialog-confirm-1').classList.remove('open');
+  document.getElementById('dialog-confirm-2').classList.add('open');
+}
+
+function closeDialogs() {
+  document.querySelectorAll('.dialog-backdrop').forEach(d => d.classList.remove('open'));
+}
+
+// =========================================================
+// COMPLETE EXAM & SHOW RESULTS
+// =========================================================
+function completeExam() {
+  closeDialogs();
+  if (timerId) clearInterval(timerId);
+
+  let totalOk = 0;
+  const stats = { 1: { ok: 0, all: 0 }, 2: { ok: 0, all: 0 }, 3: { ok: 0, all: 0 } };
+
+  QUESTIONS.forEach(q => {
+    stats[q.part].all++;
+    if (answers[q.num] === q.ans) {
+      totalOk++;
+      stats[q.part].ok++;
+    }
+  });
+
+  const pct = Math.round((totalOk / QUESTIONS.length) * 100);
+  document.getElementById('score-summary-grid').innerHTML = `
+    <div class="sc-box total">
+      <div class="t">総合正答数（正答率）</div>
+      <div class="n">${totalOk} / ${QUESTIONS.length} (${pct}%)</div>
+    </div>
+    <div class="sc-box">
+      <div class="t">大問1（短文空所補充）</div>
+      <div class="n">${stats[1].ok} / ${stats[1].all}</div>
+    </div>
+    <div class="sc-box">
+      <div class="t">大問2（長文空所補充）</div>
+      <div class="n">${stats[2].ok} / ${stats[2].all}</div>
+    </div>
+    <div class="sc-box">
+      <div class="t">大問3（長文内容一致）</div>
+      <div class="n">${stats[3].ok} / ${stats[3].all}</div>
+    </div>
+  `;
+
+  renderExplanations('all');
+  document.getElementById('screen-result').classList.add('active');
+}
+
+function renderExplanations(filter) {
+  document.querySelectorAll('#screen-result .draw-btn').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.getElementById(`flt-${filter}`);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  const list = QUESTIONS.filter(q => {
+    const isOk = answers[q.num] === q.ans;
+    if (filter === 'ng') return !isOk;
+    if (filter === 'rev') return !!reviewFlags[q.num];
+    return true;
+  });
+
+  const container = document.getElementById('explanations-container');
+  if (list.length === 0) {
+    container.innerHTML = `<p style="text-align:center; padding:24px; color:#64748b;">該当する問題はありません。</p>`;
+    return;
+  }
+
+  container.innerHTML = list.map(q => {
+    const u = answers[q.num];
+    const isOk = u === q.ans;
+    const uStr = u ? `${u}. ${q.options[u - 1]}` : "未解答";
+    const cStr = `${q.ans}. ${q.options[q.ans - 1]}`;
+    return `
+      <div class="rev-card ${isOk ? 'ok' : 'ng'}">
+        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:13.5px; margin-bottom:6px;">
+          <span>問題 (${q.num}) ［大問${q.part}${q.passageId ? ' - ' + q.passageId : ''}］ ${reviewFlags[q.num] ? '🚩あとで見直す' : ''}</span>
+          <span style="color:${isOk ? '#15803d' : '#b91c1c'};">${isOk ? '○ 正解' : '× 不正解'}</span>
+        </div>
+        <div style="font-size:14px; margin-bottom:8px; white-space:pre-line;">${escapeHtml(q.stem)}</div>
+        <div style="font-size:13px; display:flex; gap:24px; flex-wrap:wrap;">
+          <div><strong>あなたの解答：</strong><span style="color:${isOk ? '#15803d' : '#b91c1c'}; font-weight:bold;">${escapeHtml(uStr)}</span></div>
+          <div><strong>正解：</strong><span style="color:#15803d; font-weight:bold;">${escapeHtml(cStr)}</span></div>
+        </div>
+        <div class="rev-exp"><strong>【解説】</strong>${escapeHtml(q.exp)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+</script>
+</body>
+</html>
